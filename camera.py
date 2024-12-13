@@ -1,22 +1,18 @@
 import cv2
-import os
+import numpy as np
 
-cam = cv2.VideoCapture(0)
-cv2.namedWindow("test")
-while True:
-    ret, frame = cam.read()
-    if not ret:
-        print("failed to grab frame")
-        break
-    cv2.imshow("test", frame)
+def get_filtered(filename):
+    img = cv2.imread(filename)
 
-    k = cv2.waitKey(1)
-    if k % 256 == 32:
-        img_name = "frame1.png"
-        image_path = os.path.join('frames', img_name)
-        cv2.imwrite(image_path, frame)
-        print("{} written!".format(img_name))
-        break
+    img = cv2.cvtColor(img, cv2.COLOR_BGR2YUV)
+    img[:,:,0] = cv2.equalizeHist(img[:,:,0])
+    img = cv2.cvtColor(img, cv2.COLOR_YUV2BGR)
 
-cam.release()
-cv2.destroyAllWindows()  
+    img = cv2.fastNlMeansDenoisingColored(img, None, 10, 10, 7, 21)
+
+    gamma = 1.5
+    lookup_table = np.array([((i / 255.0) ** gamma) * 255 for i in np.arange(0, 256)]).astype('uint8')
+    img = cv2.LUT(img, lookup_table)
+
+    cv2.imwrite(filename, img)
+

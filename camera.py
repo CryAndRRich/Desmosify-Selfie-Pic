@@ -1,18 +1,20 @@
 import cv2
-import numpy as np
+import os
 
-def get_filtered(filename):
-    img = cv2.imread(filename)
+def get_selfie():
+    cam = cv2.VideoCapture(0)
+    while True:
+        _, frame = cam.read()
+        cv2.imshow("Webcam", frame)
 
-    img = cv2.cvtColor(img, cv2.COLOR_BGR2YUV)
-    img[:,:,0] = cv2.equalizeHist(img[:,:,0])
-    img = cv2.cvtColor(img, cv2.COLOR_YUV2BGR)
+        k = cv2.waitKey(1)
 
-    img = cv2.fastNlMeansDenoisingColored(img, None, 10, 10, 7, 21)
+        #Press space to take a picture
+        if k % 256 == 32:
+            img_name = 'sample1.png'
+            image_path = os.path.join('samples', img_name)
+            cv2.imwrite(image_path, frame)
+            break
 
-    gamma = 1.5
-    lookup_table = np.array([((i / 255.0) ** gamma) * 255 for i in np.arange(0, 256)]).astype('uint8')
-    img = cv2.LUT(img, lookup_table)
-
-    cv2.imwrite(filename, img)
-
+    cam.release()
+    cv2.destroyAllWindows()  

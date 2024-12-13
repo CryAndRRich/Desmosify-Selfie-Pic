@@ -1,35 +1,32 @@
 from flask import Flask, request, render_template
 from flask_cors import CORS
-
 import json
 import potrace
 import cv2
 import multiprocessing
-from time import time
 import os
 import webbrowser
-from threading import Timer
 
+from camera import get_selfie
+from filter import get_filtered
 
 app = Flask(__name__, template_folder='frontend')
 CORS(app)
 PORT = 5000
 
-
-FRAME_DIR = 'frames' 
+API_KEY = 'dcb31709b452b1cf9dc26972add0fda6'
+SAMPLE_DIR = 'samples' 
 FILE_EXT = 'png' 
 COLOUR = '#2464b4' 
 SCREENSHOT_SIZE = [None, None] 
 SCREENSHOT_FORMAT = 'png' 
 OPEN_BROWSER = True 
-
-DOWNLOAD_IMAGES = False 
 SHOW_GRID = True
 
-frame = multiprocessing.Value('i', 0)
+sample = multiprocessing.Value('i', 0)
 height = multiprocessing.Value('i', 0, lock = False)
 width = multiprocessing.Value('i', 0, lock = False)
-frame_latex = 0
+sample_latex = 0
 
 def get_contours(filename):
     image = cv2.imread(filename)
@@ -38,11 +35,10 @@ def get_contours(filename):
 
     edged = cv2.Canny(gray, 30, 200)
 
-    with frame.get_lock():
-        frame.value += 1
+    with sample.get_lock():
+        sample.value += 1
         height.value = max(height.value, image.shape[0])
         width.value = max(width.value, image.shape[1])
-    print('\r--> Frame %d/%d' % (frame.value, len(os.listdir(FRAME_DIR))), end='')
 
     return edged[::-1]
 
@@ -78,10 +74,10 @@ def get_latex(filename):
     return latex
 
 
-def get_expressions(frame):
+def get_expressions(sample):
     exprid = 0
     exprs = []
-    for expr in get_latex(FRAME_DIR + '/frame%d.%s' % (frame+1, FILE_EXT)):
+    for expr in get_latex(SAMPLE_DIR + '/sample%d.%s' % (sample + 1, FILE_EXT)):
         exprid += 1
         exprs.append({'id': 'expr-' + str(exprid), 'latex': expr, 'color': COLOUR, 'secret': True})
     return exprs
@@ -89,42 +85,37 @@ def get_expressions(frame):
 
 @app.route('/')
 def index():
-    frame = int(request.args.get('frame'))
-    if frame >= len(os.listdir(FRAME_DIR)):
+    sample = int(request.args.get('sample'))
+    if sample >= len(os.listdir(SAMPLE_DIR)):
         return {'result': None}
 
-    return json.dumps({'result': frame_latex[frame] })
+    return json.dumps({'result': sample_latex[sample] })
 
 
-@app.route("/calculator")
+@app.route('/calculator')
 def calculator():
-    return render_template('calculator.html', api_key='dcb31709b452b1cf9dc26972add0fda6',
-                            height=height.value, width=width.value, total_frames=len(os.listdir(FRAME_DIR)), 
+    return render_template('calculator.html', 
+                            api_key=API_KEY, height=height.value, 
+                            width=width.value, total_samples=len(os.listdir(SAMPLE_DIR)), 
                             show_grid=SHOW_GRID, screenshot_size=SCREENSHOT_SIZE, 
                             screenshot_format=SCREENSHOT_FORMAT)
 
 if __name__ == '__main__':
-    frame_latex =  range(len(os.listdir(FRAME_DIR)))
+    print('First, take a selfie!')
+    get_selfie()
 
+    print('Start the pre-processing process...')
+    filename = os.path.join('samples', 'sample1.png')
+    get_filtered(filename)
+    print('Done!')
+
+    sample_latex = range(len(os.listdir(SAMPLE_DIR)))
     with multiprocessing.Pool(processes = multiprocessing.cpu_count()) as pool:
-        print('-----------------------------')
-
-        print('Processing %d frames... Please wait for processing to finish before running on frontend\n' % len(os.listdir(FRAME_DIR)))
-
-        start = time()
-        frame_latex = pool.map(get_expressions, frame_latex)
-
-        print('\r--> Processing complete in %.1f seconds\n' % (time() - start))
-        print('\t\t===========================================================================')
-        print('\t\t|| GO CHECK OUT YOUR RENDER NOW AT:\t\t\t\t\t ||')
-        print('\t\t||\t\t\thttp://127.0.0.1:%d/calculator\t\t ||' % PORT)
-        print('\t\t===========================================================================\n')
-        print('=== SERVER LOG (Ignore if not dev) ===')
-
+        sample_latex = pool.map(get_expressions, sample_latex)
 
         if OPEN_BROWSER:
             def open_browser():
                 webbrowser.open('http://127.0.0.1:%d/calculator' % PORT)
-            Timer(1, open_browser).start()
+            open_browser()
 
         app.run(host='127.0.0.1', port=PORT)

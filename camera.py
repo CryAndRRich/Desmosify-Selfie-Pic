@@ -11,7 +11,7 @@ def get_selfie():
 
         #Press space to take a picture
         if k % 256 == 32:
-            img_name = 'sample1.png'
+            img_name = 'sample0.png'
             image_path = os.path.join('samples', img_name)
             cv2.imwrite(image_path, frame)
             break

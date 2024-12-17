@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Image Filter App</title>
+    <link rel="stylesheet" href="/static/index.css">
+</head>
+<body>
+    <section class="sidebar open">
+        <button id="toggleSidebar" class="toggleSidebar open" onclick="toggleSidebar()">Close sidebar</button>
+        <form class="filterForm">
+            <h1 class="process">Picture Processing:</h1>
+            <p><input type="checkbox" name="filters" value="g">Gamma Correction</p>
+            <p><input type="checkbox" name="filters" value="h">Histogram Equalization</p>
+            <h1 class="process">Edge Detection Algorithm:</h1>
+            <p><input type="checkbox" name="filters" value="c">Canny Edge Detection</p>
+            <p><input type="checkbox" name="filters" value="m">Marr Hildreth Edge Detection</p>
+            <p><input type="checkbox" name="filters" value="p">Prewitt Edge Detection</p>
+            <button class="applyButton" type="submit">Apply Filters</button>
+        </form>
+        <button class="renderButton" onclick="changeRoute()">Start Rendering</button>
+        <p id="note"><strong>Note:</strong> you have to select at least one edge detection algorithm before rendering</p>
+    </section>
+
+    <section class="main open">
+        <img id="filteredImage" src="/samples/sample0.png" alt="Raw Image">
+    </section>
+
+    <script>
+        let current_state = 'open';
+        const toggleButton = document.getElementById('toggleSidebar');
+        function toggleSidebar() {
+            if (current_state === 'open') {
+                document.querySelectorAll('.open').forEach(function (element) {
+                    element.classList.remove('open');
+                    element.classList.add('close');
+                });
+                toggleButton.innerText = 'Open Sidebar';
+            }
+            else {
+                document.querySelectorAll('.close').forEach(function (element) {
+                    element.classList.remove('close');
+                    element.classList.add('open');
+                });
+                toggleButton.innerText = 'Close Sidebar';
+            }
+            current_state = current_state === 'open' ? 'close': 'open';
+        }
+
+        document.getElementById('filterForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const formData = new FormData(e.target);
+            const response = await fetch('/apply-filters', {
+                method: 'POST',
+                body: formData
+            });
+            const data = await response.json();
+            document.getElementById('filteredImage').src = data.image_url;
+        });
+
+        function changeRoute() {
+            const route = '/calculator';
+            window.location.href = route;
+        };
+    </script>
+</body>
+</html>

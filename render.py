@@ -1,49 +1,60 @@
-from flask import Flask, request, render_template
+from flask import Flask, json, request, jsonify, render_template
 from flask_cors import CORS
-import json
-import potrace
-import cv2
 import multiprocessing
-import os
 import webbrowser
+import cv2
+import base64
+import os
+import potrace
+
+from filter.gamma_correction import gamma_correction
+from filter.histogram_equalization import histogram_equalization
+from filter.edge_detection import edge_detection
 
 from camera import get_selfie
-from filter import get_filtered
 
 app = Flask(__name__, template_folder='frontend')
 CORS(app)
 PORT = 5000
 
 API_KEY = 'dcb31709b452b1cf9dc26972add0fda6'
+
 SAMPLE_DIR = 'samples' 
+RAW_SAMPLE_PATH = os.path.join('samples', 'sample0.png')
+FILTERED_SAMPLE_PATH = os.path.join('samples', 'sample1.png')
+
 FILE_EXT = 'png' 
 COLOUR = '#2464b4' 
-SCREENSHOT_SIZE = [None, None] 
-SCREENSHOT_FORMAT = 'png' 
 OPEN_BROWSER = True 
 SHOW_GRID = True
 
 sample = multiprocessing.Value('i', 0)
 height = multiprocessing.Value('i', 0, lock = False)
 width = multiprocessing.Value('i', 0, lock = False)
-sample_latex = 0
 
-def get_contours(filename):
+def apply_filters(img, filters):
+    if 'g' in filters:
+        img = gamma_correction(img, gamma=1.5)
+    if 'h' in filters:
+        img = histogram_equalization(img)
+    
+    methods = []
+    if 'c' in filters:
+        methods.append('c')
+    if 'm' in filters:
+        methods.append('m')
+    if 'p' in filters:
+        methods.append('p')
+    
+    if len(methods) > 0:
+        img = edge_detection(img, methods)
+
+    return img
+
+def get_trace(filename):
     image = cv2.imread(filename)
-
-    gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-
-    edged = cv2.Canny(gray, 30, 200)
-
-    with sample.get_lock():
-        sample.value += 1
-        height.value = max(height.value, image.shape[0])
-        width.value = max(width.value, image.shape[1])
-
-    return edged[::-1]
-
-
-def get_trace(data):
+    edged = cv2.Canny(image, 30, 200)
+    data = edged[::-1]
     bmp = potrace.Bitmap(data)
     path = bmp.trace(2, potrace.POTRACE_TURNPOLICY_MINORITY, 1.0, 1, .5)
     return path
@@ -51,7 +62,7 @@ def get_trace(data):
 
 def get_latex(filename):
     latex = []
-    path = get_trace(get_contours(filename))
+    path = get_trace(filename)
 
     for curve in path.curves:
         segments = curve.segments
@@ -73,49 +84,55 @@ def get_latex(filename):
             start = segment.end_point
     return latex
 
-
 def get_expressions(sample):
     exprid = 0
-    exprs = []
+    exprs = {'latex': []}
     for expr in get_latex(SAMPLE_DIR + '/sample%d.%s' % (sample + 1, FILE_EXT)):
+        exprs['latex'].append(expr)
         exprid += 1
-        exprs.append({'id': 'expr-' + str(exprid), 'latex': expr, 'color': COLOUR, 'secret': True})
-    return exprs
+    
+    with open("sample_latex.json", "w") as file:
+        json.dump(exprs, file, indent=4)
+    
+    return exprid
 
-
-@app.route('/')
+@app.route('/', methods=['GET'])
 def index():
-    sample = int(request.args.get('sample'))
-    if sample >= len(os.listdir(SAMPLE_DIR)):
-        return {'result': None}
-
-    return json.dumps({'result': sample_latex[sample] })
-
+    return render_template('index.html')
 
 @app.route('/calculator')
 def calculator():
-    return render_template('calculator.html', 
-                            api_key=API_KEY, height=height.value, 
-                            width=width.value, total_samples=len(os.listdir(SAMPLE_DIR)), 
-                            show_grid=SHOW_GRID, screenshot_size=SCREENSHOT_SIZE, 
-                            screenshot_format=SCREENSHOT_FORMAT)
+    number_of_latex = get_expressions(0)
+
+    return render_template('calculator.html', api_key=API_KEY, total_samples=len(os.listdir(SAMPLE_DIR)),
+                           number_of_latex=number_of_latex, show_grid=SHOW_GRID)
+
+@app.route('/apply-filters', methods=['POST'])
+def apply_filters_route():
+    filters = request.form.getlist('filters')
+
+    image = cv2.imread(RAW_SAMPLE_PATH)
+
+    if filters:
+        filtered_image = apply_filters(image, filters)
+        cv2.imwrite(FILTERED_SAMPLE_PATH, filtered_image)
+        image = filtered_image
+
+    _, buffer = cv2.imencode('.png', image)
+    encoded_img = base64.b64encode(buffer).decode('utf-8')
+
+    return jsonify({'image_url': f'data:image/png;base64,{encoded_img}'})
 
 if __name__ == '__main__':
-    print('First, take a selfie!')
-    get_selfie()
+    #get_selfie()
 
-    print('Start the pre-processing process...')
-    filename = os.path.join('samples', 'sample1.png')
-    get_filtered(filename)
-    print('Done!')
+    image = cv2.imread(RAW_SAMPLE_PATH)
+    height.value = max(height.value, image.shape[0])
+    width.value = max(width.value, image.shape[1])
 
-    sample_latex = range(len(os.listdir(SAMPLE_DIR)))
-    with multiprocessing.Pool(processes = multiprocessing.cpu_count()) as pool:
-        sample_latex = pool.map(get_expressions, sample_latex)
+    if OPEN_BROWSER:
+        def open_browser():
+            webbrowser.open('http://127.0.0.1:%d' % PORT)
+        open_browser()
 
-        if OPEN_BROWSER:
-            def open_browser():
-                webbrowser.open('http://127.0.0.1:%d/calculator' % PORT)
-            open_browser()
-
-        app.run(host='127.0.0.1', port=PORT)
+    app.run(host='127.0.0.1', port=PORT)

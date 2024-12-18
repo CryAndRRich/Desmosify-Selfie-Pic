@@ -1,1 +1,51 @@
+<!DOCTYPE html>
+<html lang='en'>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Desmos | Graphing Calculator</title>
+    <link rel='icon' href='https://www.desmos.com/assets/img/apps/graphing/favicon.ico'>
+</head>
+<body>
+    <div id='calculator' style='width: 1200px; height: 550px;'></div>
+    
+    <script src='https://www.desmos.com/api/v1.10/calculator.js?apiKey={{ api_key }}'></script>
+    <script>
+        var elt = document.getElementById('calculator');
+        var calculator = Desmos.GraphingCalculator(elt);
 
+        calculator.setExpression({ id: 'lines', text: "Number of latex = {{ number_of_latex }}", type: 'text'});
+
+        alert("Rendering may take a while! Please wait!");
+        const dataUrl = '{{ url_for("desmos_render") }}';
+        fetch(dataUrl)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                for(let i = 0; i < '{{ number_of_latex }}'; i += 1){
+                    let id = 'expr' + i;
+                    calculator.setExpression({ 
+                        id: id, 
+                        latex: data[i],
+                        color: '{{ color }}',
+                        type: 'expression'
+                    });
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert("An error occurred.  Please try again later");
+            });
+
+            function setImageSrc(data) {
+                let img = document.getElementById('my-image');
+                img.src = data;
+            }
+
+    </script>
+</body>
+</html>

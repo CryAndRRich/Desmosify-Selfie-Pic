@@ -1,6 +1,5 @@
 import numpy as np
 
-# Converts an RGB image into grayscale
 def rgb2gray(rgb):
     return np.dot(rgb[..., :3], [0.2989, 0.5870, 0.1140])
 
@@ -31,7 +30,7 @@ def convolve(image, kernel):
 def sobel_edge_detection(image):
     gray_image = rgb2gray(image)
     
-    # Horizontal and Vertical sobel kernels
+    # Horizontal and Vertical Sobel kernels
     Kx = np.array([
         [-1, 0, 1],
         [-2, 0, 2],
@@ -45,7 +44,7 @@ def sobel_edge_detection(image):
     sobel_x = convolve(gray_image, Kx) / 8.0
     sobel_y = convolve(gray_image, Ky) / 8.0
 
-    #calculate the gradient magnitude
+    # Calculate the gradient magnitude
     grad_mag = (sobel_x ** 2 + sobel_y ** 2) ** 0.5
 
     sobel_edges = (grad_mag / np.max(grad_mag)) * 255

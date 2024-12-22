@@ -1,21 +1,23 @@
 import numpy as np
 
-from sobel_edge_detection import sobel_edge_detection
-from marr_hildreth_edge_detection import marr_hildreth_edge_detection
-from canny_edge_detection import canny_edge_detection
+from filter.edge_detector_algorithm.sobel_edge_detection import sobel_edge_detection
+from filter.edge_detector_algorithm.marr_hildreth_edge_detection import marr_hildreth_edge_detection
+from filter.edge_detector_algorithm.canny_edge_detection import canny_edge_detection
 
-def edge_detection(image, methods=['c', 'm', 's']):
+def edge_detection(image, methods):
     edges = []
     
     # Implementing edge detection techniques and storing the output
     for method in methods:
         if method == 'c':
-            edges.append(canny_edge_detection(image))
+            image_output = canny_edge_detection(image)
         if method == 'm':
-            edges.append(marr_hildreth_edge_detection(image))
+            image_output = marr_hildreth_edge_detection(image)
         if method == 's':
-            edges.append(sobel_edge_detection(image))
-    
+            image_output = sobel_edge_detection(image)
+
+        edges.append(image_output)
+
     h, w = image.shape[:2]
     final_edge_result = np.zeros((h, w), dtype=np.uint8)
     
@@ -29,7 +31,5 @@ def edge_detection(image, methods=['c', 'm', 's']):
                 # If there are at least 2/3 methods mark it as an edge pixel,
                 # it will be considered as an edge pixel
                 final_edge_result[i, j] = 255 
-            else:
-                final_edge_result[i, j] = 0   
-    
+
     return final_edge_result

@@ -7,9 +7,8 @@ import base64
 import os
 import potrace
 
-from filter.gamma_correction import gamma_correction
-from filter.histogram_equalization import histogram_equalization
-from filter.edge_detection import edge_detection
+from filter import contrast_enhancement_technique as cet
+from filter import edge_detector_algorithm as eda
 
 from camera import get_selfie
 
@@ -20,6 +19,7 @@ PORT = 5000
 API_KEY = 'dcb31709b452b1cf9dc26972add0fda6'
 
 SAMPLE_DIR = 'samples' 
+SAMPLE_LATEX_PATH = 'samples/sample_latex.json'
 RAW_SAMPLE_PATH = os.path.join('samples', 'sample0.png')
 FILTERED_SAMPLE_PATH = os.path.join('samples', 'sample1.png')
 
@@ -31,30 +31,31 @@ SHOW_GRID = True
 sample = multiprocessing.Value('i', 0)
 height = multiprocessing.Value('i', 0, lock = False)
 width = multiprocessing.Value('i', 0, lock = False)
+number_of_latex = 0
 
-def apply_filters(img, filters):
-    if 'g' in filters:
-        img = gamma_correction(img, gamma=1.5)
-    if 'h' in filters:
-        img = histogram_equalization(img)
-    
+def apply_filters(image, filters):
+    techniques = []
     methods = []
-    if 'c' in filters:
-        methods.append('c')
-    if 'm' in filters:
-        methods.append('m')
-    if 'p' in filters:
-        methods.append('p')
-    
-    if len(methods) > 0:
-        img = edge_detection(img, methods)
 
-    return img
+    for char in filters:
+        if char in ['g', 'h', 'l']:
+            techniques.append(char)
+            
+        if char in ['c', 's', 'm']:
+            methods.append(char)
+
+    if len(techniques) > 0:
+        image = cet.contrast_enhancement(image, techniques)
+
+    if len(methods) > 0:
+        image = eda.edge_detection(image, methods)
+
+    return image
 
 def get_trace(filename):
     image = cv2.imread(filename)
-    edged = cv2.Canny(image, 30, 200)
-    data = edged[::-1]
+    edges = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+    data = edges[::-1]
     bmp = potrace.Bitmap(data)
     path = bmp.trace(2, potrace.POTRACE_TURNPOLICY_MINORITY, 1.0, 1, .5)
     return path
@@ -85,16 +86,15 @@ def get_latex(filename):
     return latex
 
 def get_expressions(sample):
-    exprid = 0
+    global number_of_latex 
+    number_of_latex = 0
     exprs = {'latex': []}
-    for expr in get_latex(SAMPLE_DIR + '/sample%d.%s' % (sample + 1, FILE_EXT)):
+    for expr in get_latex(SAMPLE_DIR + '/sample%d.%s' % (sample, FILE_EXT)):
         exprs['latex'].append(expr)
-        exprid += 1
+        number_of_latex += 1
     
-    with open("sample_latex.json", "w") as file:
+    with open(SAMPLE_LATEX_PATH, "w") as file:
         json.dump(exprs, file, indent=4)
-    
-    return exprid
 
 @app.route('/', methods=['GET'])
 def index():
@@ -102,10 +102,10 @@ def index():
 
 @app.route('/calculator')
 def calculator():
-    number_of_latex = get_expressions(0)
+    get_expressions(1)
 
     return render_template('calculator.html', api_key=API_KEY, total_samples=len(os.listdir(SAMPLE_DIR)),
-                           number_of_latex=number_of_latex, show_grid=SHOW_GRID)
+                           number_of_latex = number_of_latex, show_grid=SHOW_GRID, color=COLOUR)
 
 @app.route('/apply-filters', methods=['POST'])
 def apply_filters_route():
@@ -123,8 +123,15 @@ def apply_filters_route():
 
     return jsonify({'image_url': f'data:image/png;base64,{encoded_img}'})
 
+@app.route('/desmos-render')
+def desmos_render():
+    with open(SAMPLE_LATEX_PATH, "r") as file:
+        data = json.load(file)
+    
+    return jsonify(data['latex'])
+
 if __name__ == '__main__':
-    #get_selfie()
+    get_selfie()
 
     image = cv2.imread(RAW_SAMPLE_PATH)
     height.value = max(height.value, image.shape[0])

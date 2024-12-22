@@ -4,19 +4,20 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Image Filter App</title>
-    <link rel="stylesheet" href="/static/index.css">
+    <link rel="stylesheet" href="{{url_for('static', filename = 'css/index.css')}}">
 </head>
 <body>
     <section class="sidebar open">
         <button id="toggleSidebar" class="toggleSidebar open" onclick="toggleSidebar()">Close sidebar</button>
-        <form class="filterForm">
-            <h1 class="process">Picture Processing:</h1>
+        <form class="filterForm" id="filterForm">
+            <h1 class="process">Contrast Enhancement:</h1>
             <p><input type="checkbox" name="filters" value="g">Gamma Correction</p>
             <p><input type="checkbox" name="filters" value="h">Histogram Equalization</p>
+            <p><input type="checkbox" name="filters" value="l">Luminance Adaption</p>
             <h1 class="process">Edge Detection Algorithm:</h1>
             <p><input type="checkbox" name="filters" value="c">Canny Edge Detection</p>
             <p><input type="checkbox" name="filters" value="m">Marr Hildreth Edge Detection</p>
-            <p><input type="checkbox" name="filters" value="p">Prewitt Edge Detection</p>
+            <p><input type="checkbox" name="filters" value="s">Sobel Edge Detection</p>
             <button class="applyButton" type="submit">Apply Filters</button>
         </form>
         <button class="renderButton" onclick="changeRoute()">Start Rendering</button>
@@ -48,10 +49,11 @@
             current_state = current_state === 'open' ? 'close': 'open';
         }
 
+        const dataUrl = '{{ url_for("apply_filters_route") }}';
         document.getElementById('filterForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             const formData = new FormData(e.target);
-            const response = await fetch('/apply-filters', {
+            const response = await fetch(dataUrl, {
                 method: 'POST',
                 body: formData
             });

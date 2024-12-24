@@ -3,13 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Image Filter App</title>
+    <title>Selfie Processing</title>
+    <link rel='icon' href='https://www.desmos.com/assets/img/apps/graphing/favicon.ico'>
     <link rel="stylesheet" href="{{url_for('static', filename = 'css/index.css')}}">
 </head>
 <body>
     <section class="sidebar open">
-        <button id="toggleSidebar" class="toggleSidebar open" onclick="toggleSidebar()">Close sidebar</button>
-        <form class="filterForm" id="filterForm">
+        <button id="toggle-sidebar" class="toggle-sidebar open" onclick="toggleSidebar()">Close sidebar</button>
+        <form class="process-form" id="process-form">
             <h1 class="process">Contrast Enhancement:</h1>
             <p><input type="checkbox" name="filters" value="g">Gamma Correction</p>
             <p><input type="checkbox" name="filters" value="h">Histogram Equalization</p>
@@ -18,19 +19,20 @@
             <p><input type="checkbox" name="filters" value="c">Canny Edge Detection</p>
             <p><input type="checkbox" name="filters" value="m">Marr Hildreth Edge Detection</p>
             <p><input type="checkbox" name="filters" value="s">Sobel Edge Detection</p>
-            <button class="applyButton" type="submit">Apply Filters</button>
+
+            <button class="apply-button" type="submit">Apply Filters</button>
         </form>
-        <button class="renderButton" onclick="changeRoute()">Start Rendering</button>
+        <button class="render-button" onclick="changeRoute()">Begin Rendering</button>
         <p id="note"><strong>Note:</strong> you have to select at least one edge detection algorithm before rendering</p>
     </section>
 
     <section class="main open">
-        <img id="filteredImage" src="/samples/sample0.png" alt="Raw Image">
+        <img id="filtered-image">
     </section>
 
     <script>
         let current_state = 'open';
-        const toggleButton = document.getElementById('toggleSidebar');
+        const toggleButton = document.getElementById('toggle-sidebar');
         function toggleSidebar() {
             if (current_state === 'open') {
                 document.querySelectorAll('.open').forEach(function (element) {
@@ -50,7 +52,7 @@
         }
 
         const dataUrl = '{{ url_for("apply_filters_route") }}';
-        document.getElementById('filterForm').addEventListener('submit', async (e) => {
+        document.getElementById('process-form').addEventListener('submit', async (e) => {
             e.preventDefault();
             const formData = new FormData(e.target);
             const response = await fetch(dataUrl, {
@@ -58,7 +60,7 @@
                 body: formData
             });
             const data = await response.json();
-            document.getElementById('filteredImage').src = data.image_url;
+            document.getElementById('filtered-image').src = data.image_url;
         });
 
         function changeRoute() {

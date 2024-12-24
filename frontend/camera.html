@@ -3,49 +3,111 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Desmos | Graphing Calculator</title>
+    <title>Desmosify</title>
     <link rel='icon' href='https://www.desmos.com/assets/img/apps/graphing/favicon.ico'>
+    <link rel="stylesheet" href="{{url_for('static', filename = 'css/calculator.css')}}">
 </head>
 <body>
-    <div id='calculator' style='width: 1200px; height: 550px;'></div>
+    <section class="button-container">
+        <button id="render-button">Start Rendering</button>
+        <button id="screenshot-button">Capture Screenshot</button>
+    </section>
     
+    <div id='calculator'></div>
+
+    <section class="screenshot-container">
+        <a id="download-link" href="" download="demosified-image.png">
+            <img id="screenshot-pic">
+        </a>
+    </section>
+
     <script src='https://www.desmos.com/api/v1.10/calculator.js?apiKey={{ api_key }}'></script>
     <script>
-        var elt = document.getElementById('calculator');
-        var calculator = Desmos.GraphingCalculator(elt);
+        let elt = document.getElementById('calculator');
+        let calculator = Desmos.GraphingCalculator(elt);
 
-        calculator.setExpression({ id: 'lines', text: "Number of latex = {{ number_of_latex }}", type: 'text'});
+        calculator.setExpression({ 
+            id: 'numOflatex', 
+            text: "Number of latex = {{ number_of_latex }}", 
+            type: 'text'
+        });
 
-        alert("Rendering may take a while! Please wait!");
+        calculator.setExpression({ 
+            id: 'note1', 
+            text: "Click on the Start Rendering button to start the rendering process. Please note that the waiting time is proportional to the 'number_of_latex'", 
+            type: 'text'
+        });
+
+        calculator.setExpression({ 
+            id: 'note2', 
+            text: "After the process is completed, click the Capture Screenshot button, and an image will appear below. When you click on the image, it will automatically be downloaded", 
+            type: 'text'
+        });
+        
+        calculator.setExpression({ 
+            id: 'note3', 
+            text: "If the number_of_latex exceeds 12,000, you should consider stopping, as the large number may cause the computer to crash", 
+            type: 'text'
+        });
+
         const dataUrl = '{{ url_for("desmos_render") }}';
-        fetch(dataUrl)
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-                return response.json();
-            })
-            .then(data => {
-                for(let i = 0; i < '{{ number_of_latex }}'; i += 1){
-                    let id = 'expr' + i;
-                    calculator.setExpression({ 
-                        id: id, 
-                        latex: data[i],
-                        color: '{{ color }}',
-                        type: 'expression'
-                    });
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                alert("An error occurred.  Please try again later");
-            });
+        let renderBtn = document.getElementById('render-button');
+        renderBtn.addEventListener('click', function() {
+            demosifySelfie(dataUrl);
+        });
 
-            function setImageSrc(data) {
-                let img = document.getElementById('my-image');
+        function demosifySelfie(dataUrl) {
+            calculator.setBlank();
+            alert('Please wait a minute! Rendering may take a while...')
+            fetch(dataUrl)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('HTTP error! status: ${response.status}');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    for(let i = 0; i < '{{ number_of_latex }}'; i += 1){
+                        let id = 'expr' + i;
+                        calculator.setExpression({ 
+                            id: id, 
+                            latex: data[i],
+                            color: '{{ color }}',
+                            type: 'expression'
+                        });
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert("An error occurred.  Please try again later");
+                });
+        }
+        
+        let screenshotBtn = document.getElementById('screenshot-button');
+        screenshotBtn.addEventListener('click', function() {
+            takeScreenshots(opts);
+        });
+
+        let img = document.getElementById('screenshot-pic');
+        let link = document.getElementById('download-link');
+        function takeScreenshots(opts) {
+            calculator.asyncScreenshot(opts, function(data) {
                 img.src = data;
-            }
+                link.href = data;
+            })
+        }
 
+        let width = parseInt('{{ width }}');
+        let height = parseInt('{{ height }}');
+        let opts = {
+            mode: 'contain',
+            mathBounds: {
+                left: -20,
+                right: width + 20,
+                bottom: 0,
+                top: height
+            }
+        }
     </script>
 </body>
 </html>

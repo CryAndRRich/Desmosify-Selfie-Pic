@@ -1,0 +1,49 @@
+body { 
+    margin: 0; 
+    padding: 0; 
+    height: 100vh; 
+    background-image: url(/static/img/bg.png);
+    background-size: cover;
+    background-position: center;
+    align-items: center;
+}
+
+#calculator {
+    width: 80vw;
+    height: 80vh;
+    margin: auto;
+}
+
+.button-container, .screenshot-container {
+    display: flex;
+    justify-content: center;
+    margin: 10px 0;
+}
+
+#screenshot-button, #render-button{
+    width: 200px;
+    border: 1.5px solid;
+    border-radius: 50px;
+    justify-content: center;
+    padding: 4px;
+    margin: 10px;
+    font-size: 15px;
+    background: transparent;
+    cursor: pointer;
+    transition: 0.1s ease-in-out;
+}
+
+#screenshot-button:hover, #render-button:hover {
+    font-weight: 600;
+    outline: 1px solid black;
+}
+
+#screenshot-container {
+    display: block;
+}
+
+#screenshot-pic {
+    margin-top: 20px;
+    border: 1px solid black;
+    cursor: pointer;
+}

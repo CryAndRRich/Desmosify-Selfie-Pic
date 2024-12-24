@@ -3,7 +3,7 @@ body {
     margin: 0; 
     padding: 0; 
     height: 100vh; 
-    background-image: url(/static/bg.png);
+    background-image: url(/static/img/bg.png);
     background-size: cover;
     background-position: center;
 }
@@ -19,14 +19,14 @@ body {
     border-right: 2.5px solid rgba(37, 35, 35, 0.3);
     border-top-right-radius: 20px;
     border-bottom-right-radius: 20px;
-    transition: 1s ease-in-out;
+    transition: 1.5s ease-in-out;
 }
 
 .sidebar.close {
     transform: translateX(-450px);
 }
 
-.toggleSidebar {
+.toggle-sidebar {
     width: 280px;
     border: 1.5px solid;
     border-radius: 50px;
@@ -37,24 +37,25 @@ body {
     font-size: 15px;
     background: transparent;
     cursor: pointer;
-    transition: transform 1s ease-in-out, width 1s ease-in-out;
+    transition: transform 1.5s ease-in-out, width 1.5s ease-in-out;
 }
 
-.toggleSidebar:hover {
+.toggle-sidebar:hover {
     font-weight: 600;
+    outline: 1px solid black;
 }
 
-.toggleSidebar.close {
+.toggle-sidebar.close {
     width: 150px;
     transform: translateX(420px);
 }
 
-.filterForm p {
+.process-form p {
     margin: 5px;
     margin-left: 40px;
 }
 
-.filterForm input {
+.process-form input {
     cursor: pointer;
 }
 
@@ -64,7 +65,7 @@ body {
     margin-left: 20px;
 }
 
-.filterForm button, .renderButton{
+.process-form button, .render-button{
     width: 280px;
     border: 1.5px solid;
     border-radius: 50px;
@@ -74,11 +75,11 @@ body {
     font-size: 15px;
     background: transparent;
     cursor: pointer;
-    transition: 0.1s ease-in-out;
 }
 
-.filterForm button:hover, .renderButton:hover {
+.process-form button:hover, .render-button:hover {
     font-weight: 600;
+    outline: 1px solid black;
 }
 
 #note {
@@ -91,15 +92,15 @@ body {
     display: flex; 
     justify-content: center; 
     align-items: center; 
-    transition: 1s ease-in-out;
+    transition: 1.5s ease-in-out;
 }
 
 .main.close {
-    transform: translateX(-15%);
+    transform: translateX(-200px);
 }
 
 img { 
     box-shadow: -2px -2px 5px 0px white;
+    height: 70vh; 
     max-width: 100%; 
-    max-height: 85vh; 
 }

@@ -19,9 +19,9 @@ PORT = 5000
 API_KEY = 'dcb31709b452b1cf9dc26972add0fda6'
 
 SAMPLE_DIR = 'samples' 
-SAMPLE_LATEX_PATH = 'samples/sample_latex.json'
-RAW_SAMPLE_PATH = os.path.join('samples', 'sample0.png')
-FILTERED_SAMPLE_PATH = os.path.join('samples', 'sample1.png')
+IMAGE_LATEX_PATH = 'samples/selfie_latex.json'
+RAW_IMAGE_PATH = os.path.join('samples', 'selfie.png')
+FILTERED_IMAGE_PATH = os.path.join('samples', 'filtered-selfie.png')
 
 FILE_EXT = 'png' 
 COLOUR = '#2464b4' 
@@ -85,15 +85,15 @@ def get_latex(filename):
             start = segment.end_point
     return latex
 
-def get_expressions(sample):
+def get_expressions(filename):
     global number_of_latex 
     number_of_latex = 0
     exprs = {'latex': []}
-    for expr in get_latex(SAMPLE_DIR + '/sample%d.%s' % (sample, FILE_EXT)):
+    for expr in get_latex(SAMPLE_DIR + '/%s.%s' % (filename, FILE_EXT)):
         exprs['latex'].append(expr)
         number_of_latex += 1
     
-    with open(SAMPLE_LATEX_PATH, "w") as file:
+    with open(IMAGE_LATEX_PATH, "w") as file:
         json.dump(exprs, file, indent=4)
 
 @app.route('/', methods=['GET'])
@@ -102,20 +102,20 @@ def index():
 
 @app.route('/calculator')
 def calculator():
-    get_expressions(1)
+    get_expressions('filtered-selfie')
 
-    return render_template('calculator.html', api_key=API_KEY, total_samples=len(os.listdir(SAMPLE_DIR)),
-                           number_of_latex = number_of_latex, show_grid=SHOW_GRID, color=COLOUR)
+    return render_template('calculator.html', api_key=API_KEY, height=height.value, width=width.value, 
+                           number_of_latex=number_of_latex, show_grid=SHOW_GRID, color=COLOUR)
 
 @app.route('/apply-filters', methods=['POST'])
 def apply_filters_route():
     filters = request.form.getlist('filters')
 
-    image = cv2.imread(RAW_SAMPLE_PATH)
+    image = cv2.imread(RAW_IMAGE_PATH)
 
     if filters:
         filtered_image = apply_filters(image, filters)
-        cv2.imwrite(FILTERED_SAMPLE_PATH, filtered_image)
+        cv2.imwrite(FILTERED_IMAGE_PATH, filtered_image)
         image = filtered_image
 
     _, buffer = cv2.imencode('.png', image)
@@ -125,15 +125,23 @@ def apply_filters_route():
 
 @app.route('/desmos-render')
 def desmos_render():
-    with open(SAMPLE_LATEX_PATH, "r") as file:
+    with open(IMAGE_LATEX_PATH, "r") as file:
         data = json.load(file)
     
     return jsonify(data['latex'])
 
 if __name__ == '__main__':
-    get_selfie()
+    print("""You already have a picture in the 'samples' folder, or you don't have one and want to take a photo with the computer's camera?
+    Press 1 if you want to take a picture.
+    Press 2 if you already have a picture, rename it to 'selfie.png'
+    
+    """)
+    
+    num = int(input('Your choice: '))
+    if num == 1:
+        get_selfie(RAW_IMAGE_PATH)
 
-    image = cv2.imread(RAW_SAMPLE_PATH)
+    image = cv2.imread(RAW_IMAGE_PATH)
     height.value = max(height.value, image.shape[0])
     width.value = max(width.value, image.shape[1])
 

@@ -69,7 +69,7 @@ def zero_crossing(image, threshold):
     
     return edges
 
-def marr_hildreth_edge_detection(image, sigma=1.2, threshold=30):
+def marr_hildreth_edge_detection(image, sigma=1.4, threshold=15):
     gray_image = rgb2gray(image)
 
     # Filtered with a Laplacian of Gaussian (LoG) kernel

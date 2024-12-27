@@ -1,8 +1,8 @@
 import numpy as np
 
-from filter.edge_detector_algorithm.sobel_edge_detection import sobel_edge_detection
-from filter.edge_detector_algorithm.marr_hildreth_edge_detection import marr_hildreth_edge_detection
-from filter.edge_detector_algorithm.canny_edge_detection import canny_edge_detection
+from .canny_edge_detection import canny_edge_detection
+from .marr_hildreth_edge_detection import marr_hildreth_edge_detection
+from .sobel_edge_detection import sobel_edge_detection
 
 def edge_detection(image, methods):
     edges = []

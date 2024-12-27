@@ -7,8 +7,7 @@ import base64
 import os
 import potrace
 
-from filter import contrast_enhancement_technique as cet
-from filter import edge_detector_algorithm as eda
+from filter import contrast_enhancement, edge_detection
 
 from camera import get_selfie
 
@@ -26,7 +25,6 @@ FILTERED_IMAGE_PATH = os.path.join('samples', 'filtered-selfie.png')
 FILE_EXT = 'png' 
 COLOUR = '#2464b4' 
 OPEN_BROWSER = True 
-SHOW_GRID = True
 
 sample = multiprocessing.Value('i', 0)
 height = multiprocessing.Value('i', 0, lock = False)
@@ -45,10 +43,10 @@ def apply_filters(image, filters):
             methods.append(char)
 
     if len(techniques) > 0:
-        image = cet.contrast_enhancement(image, techniques)
+        image = contrast_enhancement(image, techniques)
 
     if len(methods) > 0:
-        image = eda.edge_detection(image, methods)
+        image = edge_detection(image, methods)
 
     return image
 
@@ -105,7 +103,7 @@ def calculator():
     get_expressions('filtered-selfie')
 
     return render_template('calculator.html', api_key=API_KEY, height=height.value, width=width.value, 
-                           number_of_latex=number_of_latex, show_grid=SHOW_GRID, color=COLOUR)
+                           number_of_latex=number_of_latex, color=COLOUR)
 
 @app.route('/apply-filters', methods=['POST'])
 def apply_filters_route():
@@ -134,7 +132,6 @@ if __name__ == '__main__':
     print("""You already have a picture in the 'samples' folder, or you don't have one and want to take a photo with the computer's camera?
     Press 1 if you want to take a picture.
     Press 2 if you already have a picture, rename it to 'selfie.png'
-    
     """)
     
     num = int(input('Your choice: '))

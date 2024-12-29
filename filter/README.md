@@ -8,7 +8,7 @@ Since the **main purpose** of contrast enhancement techniques is to **improve im
 ## Edge Detection Algorithms
 An **edge detection algorithm** refers to a **technique** used in **image analysis** and **computer vision** to identify the locations of **significant edges** in an image while **filtering out false edges** caused by noise
 
-In this project, **three edge detection algorithms** are used: **Canny** operator, **Marr-Hildreth** operator (LoG filter), and **Sobel** operator (The **process** of each algorithm can be **read and understood** through the **comments** in each `.py` file)
+In this project, **three edge detection algorithms** are used: **Canny** operator, **Marr-Hildreth** operator (LoG filter), and **Sobel** operator (The **process** of each algorithm can be **read and understood** through the codes and **comments** in each `.py` file)
 
 Each method has its own **advantages** and **disadvantages** (though in terms of **efficiency**, the **Canny** operator is the most robust). The outputs of these three algorithms are then **combined** to produce **the most optimal result**
 
@@ -32,7 +32,30 @@ There are still **some issues** at present:
 
 One **potential solution** for achieving **better results** is to **incorporate weighting** for each method, **prioritizing** the results from **Canny**, while Marr-Hildreth and Sobel serve to **supplement small details** that Canny might **miss**. However, **determining** how to **assign the weights effectively** is a new challenge that requires further **testing** and **evaluation**
 
+**Another problem** is that, with certain images, edge detection algorithms **generate too many correct but unnecessary details**, the most typical example being **hair**. This makes Step 2 more **difficult** and **time-consuming**
 
+![too_detailed](https://github.com/CryAndRRich/Desmosify-Selfie-Pic/blob/main/.github/too_detailed.png)
+
+## Contrast Enhancement Techniques
+**Image contrast enhancement** is a **pivotal process** in **digital image processing** that aims to **improve** the visibility and perceptibility of an image by **adjusting** and **amplifying** the difference in the **brightness** and **color** of the elements within the image
+
+In this scenario, this manipulation **ensures** that the **distinct features** within an image are more easily **distinguishable**, helping the edge detection algorithm return **better results**
+
+The file contains **three contrast enhancement techniques**: **IAGCWD** (Improved Adaptive Gamma Correction with Weight Distribution), **CLAHE** (Contrast Limited Adaptive Histogram Equalization), and **LA** (Luminance Adaptation) (You can read and **understand** each method **through the code and comments** in the `.py` files and the [references]())
+
+Each technique has its own **specific utility**, however, this discussion will **focus solely** on the **impact** of these techniques on the **results** of edge detection algorithms, in this case, the **Canny operator**:
+
+![Contrast_enhance_tech](https://github.com/CryAndRRich/Desmosify-Selfie-Pic/blob/main/.github/contrast_enhance_tech.jpg)
+
+#### Some observes:
+* **OG Canny** (apply canny to original image): Detects major edges **clearly** but struggles in **low-contrast areas**, missing finer details
+* **IAGCWD**: **Significantly enhances brightness** and **highlights finer details**, especially in regions with **low contrast**. It **outperforms** OG Canny in detecting smaller and less **prominent edges**
+* **CLAHE**: **Improves** edge detection in **complex areas** by enhancing local contrast. However, it may **introduce slight noise** in areas with **less information**
+* **LA**: **Balances brightness effectively**, ensuring edges are **uniformly visible** across the image. While it maintains overall structure well, it **lacks the sharpness** provided by **IAGCWD** or **CLAHE**
+
+**Overall conclusion**: **IAGCWD** is **effective** for **enhancing details** and detecting subtle edges, while **CLAHE** is **excellent** for **local contrast** improvement but slightly **prone to noise**, and LA is **well-balanced** but **less sharp** in edge detection
+
+## References
 * Gamma Correction (IAGCWD):
   * [Contrast enhancement of brightness-distorted images by improved adaptive gamma correction](https://arxiv.org/pdf/1709.04427) 
 * Histogram Equalization (CLAHE):

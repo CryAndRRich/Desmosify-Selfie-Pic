@@ -2,16 +2,17 @@
 *.gif
 *.jpeg
 *.jpg
+*.tif
 *.mov
 *.mp4
 *.png
 *.webm
 
-!github/*.png
-!frames/*
+!.github/*
+!samples/*
 
-env
-env/*
+desmosify_env
+desmosify_env/*
 
 __pycache__/
 __pycache__/*

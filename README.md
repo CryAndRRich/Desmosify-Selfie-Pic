@@ -3,8 +3,8 @@ A simple **selfie-to-Desmos graph** converter that runs locally, a process I per
 
 ![result](https://github.com/CryAndRRich/Desmosify-Selfie-Pic/blob/main/.github/result.jpg)
 
-# How the code works
-## An overview of how everything works:
+## How the code works
+### An overview of how everything works:
 To convert an image into **usable data** for **plotting** on Desmos, we use a Python library called **Potrace**: it takes **PNG data** as a bitmap and returns a **traced path** of all the **Bézier curves**. Once we have our four points, we simply **plug them into the equation** and write it as a **LaTeX expression**, which is what the **Desmos API** uses to draw graphs. 
 
 However, **another issue** arises due to the **edge detection algorithm** used by **Potrace**, the input image must **strictly** consist of **two** colors, such as black and white. This **necessitates** a **preprocessing step** to convert the image into a **black-and-white format**
@@ -29,5 +29,7 @@ Once completed, you can click the "Capture Screenshot" button, and **an image wi
 
 ![step2](https://github.com/CryAndRRich/Desmosify-Selfie-Pic/blob/main/.github/step2.png)
 
+The **original idea** of this step belongs to [Junferno](https://github.com/kevinjycui), I then developed and modified it to suit my personal preferences. Read more about his work at [DesmosBezierRenderer](https://github.com/kevinjycui/DesmosBezierRenderer)
 
-
+## EULA
+By using Desmosify Selfie Pic, you agree to comply to the [Desmos Terms of Service](https://www.desmos.com/terms). The Software and related documentation are provided “AS IS” and without any warranty of any kind. Desmosify Selfie Pic is not responsible for any User application or modification that constitutes a breach in terms. User acknowledges and agrees that the use of the Software is at the User's sole risk. The developer kindly asks Users to not use Desmosify Selfie Pic to enter into [Desmos Math Art](https://www.desmos.com/art?lang=en) competitions, for the purpose of maintaining fairness and integrity

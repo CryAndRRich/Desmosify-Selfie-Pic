@@ -32,7 +32,7 @@ There are still **some issues** at present:
 
 One **potential solution** for achieving **better results** is to **incorporate weighting** for each method, **prioritizing** the results from **Canny**, while Marr-Hildreth and Sobel serve to **supplement small details** that Canny might **miss**. However, **determining** how to **assign the weights effectively** is a new challenge that requires further **testing** and **evaluation**
 
-**Another problem** is that, with certain images, edge detection algorithms **generate too many correct but unnecessary details**, the most typical example being **hair**. This makes Step 2 more **difficult** and **time-consuming**
+**Another problem** is that, with certain images, edge detection algorithms **generate too many correct but unnecessary details**, the most typical example being **hair**. This makes [Step 2](https://github.com/CryAndRRich/Desmosify-Selfie-Pic/blob/main/README.md#step-2-desmosify) more **difficult** and **time-consuming**
 
 ![too_detailed](https://github.com/CryAndRRich/Desmosify-Selfie-Pic/blob/main/.github/too_detailed.png)
 
@@ -56,6 +56,8 @@ Each technique has its own **specific utility**, however, this discussion will *
 **Overall conclusion**: **IAGCWD** is **effective** for **enhancing details** and detecting subtle edges, while **CLAHE** is **excellent** for **local contrast** improvement but slightly **prone to noise**, and LA is **well-balanced** but **less sharp** in edge detection
 
 ## References
+Below are the **main articles and documents** on **contrast enhancement techniques**, which have **significantly contributed** to the development of the **code segments**
+
 * Gamma Correction (IAGCWD):
   * [Contrast enhancement of brightness-distorted images by improved adaptive gamma correction](https://arxiv.org/pdf/1709.04427) 
 * Histogram Equalization (CLAHE):

@@ -18,7 +18,7 @@ From the image below, there are **three contrast enhancement techniques** and **
 
 ![step1](https://github.com/CryAndRRich/Desmosify-Selfie-Pic/blob/main/.github/step1.png)
 
-A more **detailed analysis** of the contrast enhancement techniques and the three edge detection algorithms can be found [here](https://github.com/CryAndRRich/Desmosify-Selfie-Pic/blob/main/filter/README.md)
+A more **detailed analysis** of the contrast enhancement techniques and the three edge detection algorithms can be found [here](https://github.com/CryAndRRich/Desmosify-Selfie-Pic/blob/main/filter/PROCESSING.md)
 
 ## Step 2: Desmosify
 Once you have a **suitable black-and-white image**, proceed by clicking the `Begin Rendering` button

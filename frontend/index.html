@@ -9,7 +9,7 @@
 </head>
 <body>
     <section class="sidebar open">
-        <button id="toggle-sidebar" class="toggle-sidebar open" onclick="toggleSidebar()">Close sidebar</button>
+        <button class="toggle-sidebar open" id="toggle-sidebar" onclick="toggleSidebar()">Close sidebar</button>
         <form class="process-form" id="process-form">
             <h1 class="process">Contrast Enhancement:</h1>
             <p><input type="checkbox" name="filters" value="g">Gamma Correction</p>
@@ -22,8 +22,8 @@
 
             <button class="apply-button" type="submit">Apply Filters</button>
         </form>
-        <button class="render-button" onclick="changeRoute()">Begin Rendering</button>
-        <p id="note"><strong>Note:</strong> you have to select at least one edge detection algorithm before rendering</p>
+        <button class="render-button" id="render-button" onclick="changeRoute()" disabled>Begin Rendering</button>
+        <p id="note"><strong>Note:</strong> You must select at least one edge detection algorithm before starting to render. Until then, the "Begin Rendering" button will remain disabled</p>
     </section>
 
     <section class="main open">
@@ -51,6 +51,7 @@
             current_state = current_state === 'open' ? 'close': 'open';
         }
 
+        const renderButton = document.getElementById('render-button');
         const dataUrl = '{{ url_for("apply_filters_route") }}';
         document.getElementById('process-form').addEventListener('submit', async (e) => {
             e.preventDefault();
@@ -61,6 +62,7 @@
             });
             const data = await response.json();
             document.getElementById('filtered-image').src = data.image_url;
+            renderButton.disabled = !data.renderable;
             alert("Applying filters is complete! Click 'Ok' to see the result")
         });
 

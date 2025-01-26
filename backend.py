@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Tuple
 from flask import Flask, json, request, jsonify, render_template
 from flask_cors import CORS
 import multiprocessing
@@ -33,7 +33,7 @@ width = multiprocessing.Value('i', 0, lock = False)
 number_of_latex = 0
 
 def apply_filters(image: np.ndarray, 
-                  filters: str) -> np.ndarray:
+                  filters: str) -> Tuple[np.ndarray, bool]:
     """
     Apply a series of filters to an image based on the provided filter string.
 
@@ -45,7 +45,8 @@ def apply_filters(image: np.ndarray,
 
     --------------------------------------------------
     Returns:
-        The processed image after applying the enhancement and edge detection filters
+        image: The processed image after applying the enhancement and edge detection filters
+        renderable: A boolean value indicating whether the image has been converted to an edges image
     """
     techniques = []
     methods = []
@@ -61,11 +62,13 @@ def apply_filters(image: np.ndarray,
     if len(techniques) > 0:
         image = contrast_enhancement(image, techniques)
 
+    renderable = False
     # Apply edge detection methods if any
     if len(methods) > 0:
         image = edge_detection(image, methods)
+        renderable = True
 
-    return image
+    return image, renderable
 
 def get_trace(filename: str) -> potrace.Path:
     """
@@ -145,7 +148,7 @@ def get_expressions(filename: str) -> None:
 def index():
     return render_template('index.html')
 
-@app.route('/calculator')
+@app.route('/calculator', methods=['GET'])
 def calculator():
     get_expressions('filtered-selfie')
 
@@ -157,18 +160,19 @@ def apply_filters_route():
     filters = request.form.getlist('filters')
 
     image = cv2.imread(RAW_IMAGE_PATH)
-
+    renderable = False
     if filters:
-        filtered_image = apply_filters(image, filters)
+        filtered_image, renderable = apply_filters(image, filters)
         cv2.imwrite(FILTERED_IMAGE_PATH, filtered_image)
         image = filtered_image
 
     _, buffer = cv2.imencode('.png', image)
     encoded_img = base64.b64encode(buffer).decode('utf-8')
 
-    return jsonify({'image_url': f'data:image/png;base64,{encoded_img}'})
+    return jsonify({'image_url': f'data:image/png;base64,{encoded_img}',
+                    'renderable': renderable})
 
-@app.route('/desmos-render')
+@app.route('/desmos-render', methods=['GET'])
 def desmos_render():
     with open(IMAGE_LATEX_PATH, "r") as file:
         data = json.load(file)

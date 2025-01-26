@@ -1,9 +1,31 @@
 import numpy as np
 
-def rgb2gray(rgb):
+def rgb2gray(rgb: np.ndarray) -> np.ndarray:
+    """
+    Convert an RGB image to grayscale
+
+    Parameters:
+        rgb: The input image in RGB format as a 2D array of shape (height, width, 3)
+
+    --------------------------------------------------
+    Returns:
+        np.ndarray: A 2D grayscale image of the same size as the input image
+    """
     return np.dot(rgb[..., :3], [0.2989, 0.5870, 0.1140])
 
-def convolve(image, kernel):
+def convolve(image: np.ndarray, 
+             kernel: np.ndarray) -> np.ndarray:
+    """
+    Convolve an image with a given kernel
+
+    Parameters:
+        image: The input image to be convolved, a 2D numpy array
+        kernel: The kernel to be used for the convolution, a 2D numpy array
+
+    --------------------------------------------------
+    Returns:
+        conv: The convolved image as a 2D numpy array of the same size as the input image
+    """
     r, c = image.shape
     ker_r, ker_c = kernel.shape
 
@@ -27,10 +49,20 @@ def convolve(image, kernel):
 
     return conv
 
-def sobel_edge_detection(image):
+def sobel_edge_detection(image: np.ndarray) -> np.ndarray:
+    """
+    Perform edge detection using the Sobel operator
+
+    Parameters:
+        image: The input image in RGB format
+
+    --------------------------------------------------
+    Returns:
+        sobel_edges: A binary image with edges marked as 255 and non-edges marked as 0
+    """
     gray_image = rgb2gray(image)
     
-    # Horizontal and Vertical Sobel kernels
+    # Horizontal and Vertical sobel kernels
     Kx = np.array([
         [-1, 0, 1],
         [-2, 0, 2],
@@ -47,6 +79,7 @@ def sobel_edge_detection(image):
     # Calculate the gradient magnitude
     grad_mag = (sobel_x ** 2 + sobel_y ** 2) ** 0.5
 
+    # Normalize and scale to the range 0-255
     sobel_edges = (grad_mag / np.max(grad_mag)) * 255
-    return sobel_edges
 
+    return sobel_edges

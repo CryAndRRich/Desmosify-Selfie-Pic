@@ -61,6 +61,7 @@
             });
             const data = await response.json();
             document.getElementById('filtered-image').src = data.image_url;
+            alert("Applying filters is complete! Click 'Ok' to see the result")
         });
 
         function changeRoute() {

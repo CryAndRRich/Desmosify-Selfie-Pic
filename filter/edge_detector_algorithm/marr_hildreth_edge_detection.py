@@ -1,10 +1,31 @@
 import numpy as np 
 
-# Converts an RGB image into grayscale
-def rgb2gray(rgb):
+def rgb2gray(rgb: np.ndarray) -> np.ndarray:
+    """
+    Convert an RGB image to grayscale
+
+    Parameters:
+        rgb: The input image in RGB format as a 2D array of shape (height, width, 3)
+
+    --------------------------------------------------
+    Returns:
+        np.ndarray: A 2D grayscale image of the same size as the input image
+    """
     return np.dot(rgb[..., :3], [0.2989, 0.5870, 0.1140])
 
-def convolve(image, kernel):
+def convolve(image: np.ndarray, 
+             kernel: np.ndarray) -> np.ndarray:
+    """
+    Convolve an image with a given kernel.
+
+    Parameters:
+        image: The input image to be convolved, a 2D numpy array.
+        kernel: The kernel to be used for the convolution, a 2D numpy array.
+
+    --------------------------------------------------
+    Returns:
+        conv: The convolved image as a 2D numpy array of the same size as the input image.
+    """
     r, c = image.shape
     ker_r, ker_c = kernel.shape
 
@@ -28,8 +49,17 @@ def convolve(image, kernel):
 
     return conv
 
-# Create Gaussian kernel
-def gaussian_kernel(sigma):
+def gaussian_kernel(sigma: float) -> np.ndarray:
+    """
+    Create a Gaussian kernel with a given standard deviation
+
+    Parameters:
+        sigma: The standard deviation for the Gaussian kernel
+
+    --------------------------------------------------
+    Returns:
+        kernel: A 2D Gaussian kernel as a numpy array
+    """
     size = np.ceil(3 * sigma).astype(int)
 
     size = size // 2
@@ -39,8 +69,19 @@ def gaussian_kernel(sigma):
 
     return kernel
 
-# Edge detection using zero crossing algorithm 
-def zero_crossing(image, threshold):
+def zero_crossing(image: np.ndarray, 
+                  threshold: float) -> np.ndarray:
+    """
+    Detect edges using the zero crossing method
+
+    Parameters:
+        image: The input image after applying a Laplacian operator
+        threshold: The threshold value to identify edges based on zero crossings
+
+    --------------------------------------------------
+    Returns:
+        edges: A binary image where edges are marked with a value of 255, and non-edges with 0
+    """
     h, w = image.shape
 
     edges = np.zeros_like(image, dtype=np.uint8)
@@ -69,7 +110,21 @@ def zero_crossing(image, threshold):
     
     return edges
 
-def marr_hildreth_edge_detection(image, sigma=1.4, threshold=15):
+def marr_hildreth_edge_detection(image: np.ndarray, 
+                                 sigma: float = 1.4, 
+                                 threshold: float = 15) -> np.ndarray:
+    """
+    Perform edge detection using the Marr-Hildreth method, which uses the Laplacian of Gaussian (LoG) filter
+
+    Parameters:
+        image: The input RGB image to be processed
+        sigma: The standard deviation for the Gaussian kernel used in the LoG filter
+        threshold: The threshold value for zero crossing detection
+
+    --------------------------------------------------
+    Returns:
+        marr_hildreth_edges: A binary image with edges marked as 255 and non-edges marked as 0
+    """
     gray_image = rgb2gray(image)
 
     # Filtered with a Laplacian of Gaussian (LoG) kernel
@@ -84,4 +139,3 @@ def marr_hildreth_edge_detection(image, sigma=1.4, threshold=15):
     marr_hildreth_edges = zero_crossing(image_laplacian, threshold)
 
     return marr_hildreth_edges
-
